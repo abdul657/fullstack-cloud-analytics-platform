@@ -1,0 +1,13 @@
+{
+  "name": "fullstack-cloud-analytics-platform",
+  "version": "1.0.0",
+  "private": true,
+  "engines": { "node": ">=22" },
+  "workspaces": ["apps/api", "apps/web"],
+  "scripts": {
+    "build": "npm run build --workspace=@portfolio/analytics-api && npm run build --workspace=@portfolio/analytics-web",
+    "test": "npm test --workspace=@portfolio/analytics-api",
+    "dev:api": "npm run dev --workspace=@portfolio/analytics-api",
+    "dev:web": "npm run dev --workspace=@portfolio/analytics-web"
+  }
+}
