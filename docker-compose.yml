@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: analytics
+      POSTGRES_PASSWORD: analytics_dev
+      POSTGRES_DB: operations
+    ports:
+      - "5434:5432"
+    volumes:
+      - operations_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U analytics -d operations"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ./apps/api
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      DATABASE_URL: postgres://analytics:analytics_dev@db:5432/operations
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:-}
+    ports:
+      - "4000:4000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./apps/web
+    environment:
+      API_PROXY_TARGET: http://api:4000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+volumes:
+  operations_data:
